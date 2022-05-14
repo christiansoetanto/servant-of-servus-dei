@@ -23,7 +23,7 @@ func init() {
 }
 
 var (
-	Token         = flag.String("t", "", "Bot Token")
+	Token         = flag.String("t", os.Getenv("BOTTOKEN"), "Bot Token")
 	isLocalServer = flag.Bool("l", false, "True if local debugging and use local server. Default is false, use Servus Dei config.")
 	// GuildID i really cant find a way to put GuildID to config... i did tho
 	//GuildID = flag.String("g", "751139261515825162", "Guild ID. If not passed - bot registers commands globally")
