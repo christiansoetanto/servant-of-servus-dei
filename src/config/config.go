@@ -55,3 +55,33 @@ var Moderator = map[ModeratorUserId]ModeratorUsername{
 
 type ModeratorUserId string
 type ModeratorUsername string
+
+type Channel struct {
+	GeneralDiscussion     string
+	ReactionRoles         string
+	ServerInformation     string
+	ReligiousQuestions    string
+	ReligiousDiscussions1 string
+	ReligiousDiscussions2 string
+	AnsweredQuestions     string
+	FAQ                   string
+	Responses             string
+	VettingQuestioning    string
+	RulesVetting          string
+}
+type Role struct {
+	Vetting            string
+	VettingQuestioning string
+	ApprovedUser       string
+}
+type Reaction struct {
+	Upvote string
+	Sin    string
+}
+
+type GuildConfig struct {
+}
+
+type GuildId string
+
+type Config map[GuildId]GuildConfig
