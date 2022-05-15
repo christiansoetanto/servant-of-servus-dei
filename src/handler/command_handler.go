@@ -68,8 +68,8 @@ func InitCommandHandler() {
 				acknowledgementMessageArgs = append(acknowledgementMessageArgs, userOpt.UserValue(nil).ID)
 				user = userOpt.UserValue(nil)
 				welcomeMessageArgs = append(welcomeMessageArgs, user.ID)
-				welcomeMessageArgs = append(welcomeMessageArgs, util.ReactionRolesChannelID)
-				welcomeMessageArgs = append(welcomeMessageArgs, util.ServerInformationChannelID)
+				welcomeMessageArgs = append(welcomeMessageArgs, util.ReactionRolesChannelId)
+				welcomeMessageArgs = append(welcomeMessageArgs, util.ServerInformationChannelId)
 
 				//actually i dont need to put this in here, because user is required anyway. but just to be safe haha
 				roleOpt, ok := optionMap["role-option"]
@@ -84,15 +84,15 @@ func InitCommandHandler() {
 					}
 				}
 
-				err := dg.GuildMemberRoleAdd(util.GuildID, user.ID, util.ApprovedUserRoleID)
+				err := dg.GuildMemberRoleAdd(util.GuildID, user.ID, util.ApprovedUserRoleId)
 				if err != nil {
 					return err
 				}
-				err = dg.GuildMemberRoleRemove(util.GuildID, user.ID, util.VettingRoleID)
+				err = dg.GuildMemberRoleRemove(util.GuildID, user.ID, util.VettingRoleId)
 				if err != nil {
 					return err
 				}
-				err = dg.GuildMemberRoleRemove(util.GuildID, user.ID, util.VettingQuestioningRoleID)
+				err = dg.GuildMemberRoleRemove(util.GuildID, user.ID, util.VettingQuestioningRoleId)
 				if err != nil {
 					return err
 				}
@@ -106,12 +106,12 @@ func InitCommandHandler() {
 				}
 			}
 
-			_, err = dg.ChannelMessageSend(util.GeneralDiscussionChannelID, user.Mention())
+			_, err = dg.ChannelMessageSend(util.GeneralDiscussionChannelId, user.Mention())
 			if err != nil {
 				return err
 			}
 
-			_, err = dg.ChannelMessageSendEmbed(util.GeneralDiscussionChannelID, util.EmbedBuilder(util.WelcomeTitle, fmt.Sprintf(welcomeMessageFormat, welcomeMessageArgs...)))
+			_, err = dg.ChannelMessageSendEmbed(util.GeneralDiscussionChannelId, util.EmbedBuilder(util.WelcomeTitle, fmt.Sprintf(welcomeMessageFormat, welcomeMessageArgs...)))
 			if err != nil {
 				return err
 			}

@@ -11,23 +11,25 @@ const (
 	localConfigApprovedUserRoleID         = "974632216304943155"
 	localConfigGuildID                    = "813302330782253066"
 
-	localConfigLatinCatholic     ReligionRoleID = "974630535395680337"
-	localConfigEasternCatholic   ReligionRoleID = "974667212587671613"
-	localConfigOrthodoxChristian ReligionRoleID = "974667248826449950"
-	localConfigRCIACatechumen    ReligionRoleID = "974667251498225704"
-	localConfigProtestant        ReligionRoleID = "974667253045919784"
-	localConfigNonCatholic       ReligionRoleID = "974667254627201084"
-	localConfigAtheist           ReligionRoleID = "974667257122795570"
+	localConfigLatinCatholic     ReligionRoleId = "974630535395680337"
+	localConfigEasternCatholic   ReligionRoleId = "974667212587671613"
+	localConfigOrthodoxChristian ReligionRoleId = "974667248826449950"
+	localConfigRCIACatechumen    ReligionRoleId = "974667251498225704"
+	localConfigProtestant        ReligionRoleId = "974667253045919784"
+	localConfigNonCatholic       ReligionRoleId = "974667254627201084"
+	localConfigAtheist           ReligionRoleId = "974667257122795570"
+
+	localConfigUpvoteReactionID = ""
 )
 
 func ApplyLocalServerConfig() {
 	fmt.Println("Applying local server config...")
-	GeneralDiscussionChannelID = localConfigGeneralDiscussionChannelID
-	ReactionRolesChannelID = localConfigReactionRolesChannelID
-	ServerInformationChannelID = localConfigServerInformationChannelID
-	VettingRoleID = localConfigVettingRoleID
-	VettingQuestioningRoleID = localConfigVettingQuestioningRoleID
-	ApprovedUserRoleID = localConfigApprovedUserRoleID
+	GeneralDiscussionChannelId = localConfigGeneralDiscussionChannelID
+	ReactionRolesChannelId = localConfigReactionRolesChannelID
+	ServerInformationChannelId = localConfigServerInformationChannelID
+	VettingRoleId = localConfigVettingRoleID
+	VettingQuestioningRoleId = localConfigVettingQuestioningRoleID
+	ApprovedUserRoleId = localConfigApprovedUserRoleID
 	GuildID = localConfigGuildID
 
 	ReligionRoleMapping[LatinCatholic] = localConfigLatinCatholic
@@ -37,4 +39,7 @@ func ApplyLocalServerConfig() {
 	ReligionRoleMapping[Protestant] = localConfigProtestant
 	ReligionRoleMapping[NonCatholic] = localConfigNonCatholic
 	ReligionRoleMapping[Atheist] = localConfigAtheist
+
+	UpvoteReactionId = localConfigUpvoteReactionID
+
 }
