@@ -10,6 +10,9 @@ var (
 	ReligiousDiscussions2ChannelId string
 	AnsweredQuestionsChannelId     string
 	FAQChannelId                   string
+	ResponsesChannelId             string
+	VettingQuestioningChannelId    string
+	RulesVettingChannelId          string
 )
 
 //Role group

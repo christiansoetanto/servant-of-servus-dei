@@ -11,6 +11,9 @@ const (
 	servusDeiReligiousDiscussions2ChannelID   = "771836244879605811"
 	servusDeiAnsweredQuestionsChannelID       = "821657995129126942"
 	servusDeiFAQChannelID                     = "806007417321291776"
+	servusDeiResponsesChannelId               = "751151421231202363"
+	servusDeiVettingQuestioningChannelId      = "914987511481249792"
+	servusDeiRulesVettingChannelId            = "775654889934159893"
 
 	servusDeiConfigVettingRoleID            = "751145124834312342"
 	servusDeiConfigVettingQuestioningRoleID = "914986915030241301"
@@ -40,6 +43,9 @@ func ApplyServusDeiServerConfig() {
 	ReligiousDiscussions2ChannelId = servusDeiReligiousDiscussions2ChannelID
 	AnsweredQuestionsChannelId = servusDeiAnsweredQuestionsChannelID
 	FAQChannelId = servusDeiFAQChannelID
+	ResponsesChannelId = servusDeiResponsesChannelId
+	VettingQuestioningChannelId = servusDeiVettingQuestioningChannelId
+	RulesVettingChannelId = servusDeiRulesVettingChannelId
 
 	VettingRoleId = servusDeiConfigVettingRoleID
 	VettingQuestioningRoleId = servusDeiConfigVettingQuestioningRoleID

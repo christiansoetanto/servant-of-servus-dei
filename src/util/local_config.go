@@ -6,10 +6,11 @@ const (
 	localConfigGeneralDiscussionChannelID = "813302330782253069"
 	localConfigReactionRolesChannelID     = "941213323444244501"
 	localConfigServerInformationChannelID = "848858055944306698"
-	localConfigVettingRoleID              = "974632148952809482"
-	localConfigVettingQuestioningRoleID   = "974632188823863296"
-	localConfigApprovedUserRoleID         = "974632216304943155"
-	localConfigGuildID                    = "813302330782253066"
+
+	localConfigVettingRoleID            = "974632148952809482"
+	localConfigVettingQuestioningRoleID = "974632188823863296"
+	localConfigApprovedUserRoleID       = "974632216304943155"
+	localConfigGuildID                  = "813302330782253066"
 
 	localConfigLatinCatholic     ReligionRoleId = "974630535395680337"
 	localConfigEasternCatholic   ReligionRoleId = "974667212587671613"
