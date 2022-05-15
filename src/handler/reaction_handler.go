@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
-	"github.com/christiansoetanto/servant-of-servus-dei/src/util"
+	"github.com/christiansoetanto/servant-of-servus-dei/src/config"
 )
 
 //TODO list, later:
@@ -18,16 +18,18 @@ func MessageReactionAddHandler(s *discordgo.Session, m *discordgo.MessageReactio
 		return
 	}
 
-	if m.Emoji.ID != util.UpvoteReactionId && m.Emoji.ID != util.SinReactionId {
+	guildId := m.GuildID
+
+	if m.Emoji.ID != config.Config[guildId].Reaction.Upvote && m.Emoji.ID != config.Config[guildId].Reaction.Sin {
 		return
 	}
 
-	if _, ok := util.Moderator[util.ModeratorUserId(m.UserID)]; !ok {
+	if _, ok := config.Moderator[config.ModeratorUserId(m.UserID)]; !ok {
 		return
 	}
 
 	channelId := m.ChannelID
-	if channelId != util.ReligiousQuestionsChannelId {
+	if channelId != config.Config[guildId].Channel.ReligiousQuestions {
 		return
 	}
 	//what i have done: do all validation, already able to catch the add upvote reaction handler in RQ
@@ -43,10 +45,10 @@ func MessageReactionAddHandler(s *discordgo.Session, m *discordgo.MessageReactio
 
 	messageId := m.MessageID
 
-	rd1Users, err := s.MessageReactions(m.ChannelID, messageId, util.ReligiousDiscussions1WhiteCheckMarkEmojiName, 0, "", "")
+	rd1Users, err := s.MessageReactions(m.ChannelID, messageId, config.ReligiousDiscussions1WhiteCheckMarkEmojiName, 0, "", "")
 	//rd2Users, err := s.MessageReactions(m.ChannelID, messageId, util.ReligiousDiscussions2BallotBoxWithCheckEmojiName, 0, "", "")
 
-	message, err := s.ChannelMessage(util.ReligiousQuestionsChannelId, messageId)
+	message, err := s.ChannelMessage(config.Config[guildId].Channel.ReligiousQuestions, messageId)
 	if err != nil {
 		return
 	}
@@ -58,26 +60,26 @@ func MessageReactionAddHandler(s *discordgo.Session, m *discordgo.MessageReactio
 	if len(rd1Users) > 0 {
 
 		//di sini bikin algs utk crawl channelnya. cek logic di code lama.
-		messages, err := s.ChannelMessages(util.ReligiousDiscussions1ChannelId, 100, "", "", "")
+		messages, err := s.ChannelMessages(config.Config[guildId].Channel.ReligiousDiscussions1, 100, "", "", "")
 		_, _ = messages, err
 	}
 
 	for _, reaction := range reactions {
 		emoji := reaction.Emoji
 
-		if emoji.Name != util.ReligiousDiscussions1WhiteCheckMarkEmojiName && emoji.Name != util.ReligiousDiscussions2BallotBoxWithCheckEmojiName {
+		if emoji.Name != config.ReligiousDiscussions1WhiteCheckMarkEmojiName && emoji.Name != config.ReligiousDiscussions2BallotBoxWithCheckEmojiName {
 			continue
 		}
 
 		//add to rd1 map
-		if emoji.Name == util.ReligiousDiscussions1WhiteCheckMarkEmojiName {
+		if emoji.Name == config.ReligiousDiscussions1WhiteCheckMarkEmojiName {
 
 			rd1[emoji.User.ID] = answerData{
 				user: emoji.User,
 			}
 
 		}
-		if emoji.Name == util.ReligiousDiscussions2BallotBoxWithCheckEmojiName {
+		if emoji.Name == config.ReligiousDiscussions2BallotBoxWithCheckEmojiName {
 			rd2[emoji.User.ID] = answerData{
 				user: emoji.User,
 			}

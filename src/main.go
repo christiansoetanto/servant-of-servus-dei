@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/christiansoetanto/servant-of-servus-dei/src/handler"
-	"github.com/christiansoetanto/servant-of-servus-dei/src/util"
 	"log"
 	"os"
 	"os/signal"
@@ -33,11 +32,6 @@ var (
 
 func initConfig() {
 	flag.Parse()
-	if *isLocalServer {
-		util.ApplyLocalServerConfig()
-	} else {
-		util.ApplyServusDeiServerConfig()
-	}
 }
 
 var dg *discordgo.Session
@@ -71,7 +65,17 @@ func main() {
 	}
 	defer dg.Close()
 
-	dg, err = handler.RegisterCommand(dg, util.GuildID)
+	// !!!Register it globally for now.
+	/*
+		*
+		for guildId, _ := range config.Config {
+			dg, err = handler.RegisterCommand(dg, guildId)
+			if err != nil {
+				return
+			}
+		}
+	*/
+	dg, err = handler.RegisterCommand(dg, "")
 	if err != nil {
 		return
 	}
@@ -83,7 +87,16 @@ func main() {
 	<-sc
 
 	if *RemoveCommands {
-		err = handler.RemoveCommand(dg, util.GuildID)
+		// !!!Remove it globally for now.
+		/*
+			for guildId, _ := range config.Config {
+				err = handler.RemoveCommand(dg, config.GuildID)
+				if err != nil {
+					return
+				}
+			}
+		*/
+		err = handler.RemoveCommand(dg, "")
 		if err != nil {
 			return
 		}

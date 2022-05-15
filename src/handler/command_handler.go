@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"github.com/christiansoetanto/servant-of-servus-dei/src/config"
 	"github.com/christiansoetanto/servant-of-servus-dei/src/util"
 	"log"
 )
@@ -49,6 +50,7 @@ func InitCommandHandler() {
 			}
 			// Access options in the order provided by the user.
 			options := i.ApplicationCommandData().Options
+			guildId := i.GuildID
 
 			// Or convert the slice into a map
 			optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
@@ -62,37 +64,37 @@ func InitCommandHandler() {
 
 			var user *discordgo.User
 
-			var roleId string
 			userOpt, ok := optionMap["user-option"]
 			if ok {
 				acknowledgementMessageArgs = append(acknowledgementMessageArgs, userOpt.UserValue(nil).ID)
 				user = userOpt.UserValue(nil)
 				welcomeMessageArgs = append(welcomeMessageArgs, user.ID)
-				welcomeMessageArgs = append(welcomeMessageArgs, util.ReactionRolesChannelId)
-				welcomeMessageArgs = append(welcomeMessageArgs, util.ServerInformationChannelId)
+				welcomeMessageArgs = append(welcomeMessageArgs, config.Config[guildId].Channel.ReactionRoles)
+				welcomeMessageArgs = append(welcomeMessageArgs, config.Config[guildId].Channel.ServerInformation)
 
 				//actually i dont need to put this in here, because user is required anyway. but just to be safe haha
 				roleOpt, ok := optionMap["role-option"]
 				if ok {
 					acknowledgementMessageFormat = acknowledgementMessageFormatWithRole
-					roleId = roleOpt.StringValue()
+					roleType := roleOpt.StringValue()
+					roleId := config.Config[guildId].ReligionRoleMapping[config.ReligionRoleType(roleType)]
 					acknowledgementMessageArgs = append(acknowledgementMessageArgs, roleId)
-					err := dg.GuildMemberRoleAdd(util.GuildID, user.ID, roleId)
+					err := dg.GuildMemberRoleAdd(guildId, user.ID, string(roleId))
 					if err != nil {
 						fmt.Println(err)
 						return err
 					}
 				}
 
-				err := dg.GuildMemberRoleAdd(util.GuildID, user.ID, util.ApprovedUserRoleId)
+				err := dg.GuildMemberRoleAdd(guildId, user.ID, config.Config[guildId].Role.ApprovedUser)
 				if err != nil {
 					return err
 				}
-				err = dg.GuildMemberRoleRemove(util.GuildID, user.ID, util.VettingRoleId)
+				err = dg.GuildMemberRoleRemove(guildId, user.ID, config.Config[guildId].Role.Vetting)
 				if err != nil {
 					return err
 				}
-				err = dg.GuildMemberRoleRemove(util.GuildID, user.ID, util.VettingQuestioningRoleId)
+				err = dg.GuildMemberRoleRemove(guildId, user.ID, config.Config[guildId].Role.VettingQuestioning)
 				if err != nil {
 					return err
 				}
@@ -106,12 +108,12 @@ func InitCommandHandler() {
 				}
 			}
 
-			_, err = dg.ChannelMessageSend(util.GeneralDiscussionChannelId, user.Mention())
+			_, err = dg.ChannelMessageSend(config.Config[guildId].Channel.GeneralDiscussion, user.Mention())
 			if err != nil {
 				return err
 			}
 
-			_, err = dg.ChannelMessageSendEmbed(util.GeneralDiscussionChannelId, util.EmbedBuilder(util.WelcomeTitle, fmt.Sprintf(welcomeMessageFormat, welcomeMessageArgs...)))
+			_, err = dg.ChannelMessageSendEmbed(config.Config[guildId].Channel.GeneralDiscussion, util.EmbedBuilder(util.WelcomeTitle, fmt.Sprintf(welcomeMessageFormat, welcomeMessageArgs...), util.RandomWelcomeImage()))
 			if err != nil {
 				return err
 			}
@@ -204,22 +206,32 @@ func RemoveCommand(dg *discordgo.Session, guildId string) error {
 }
 
 func buildReligionRoleOptionChoices() []*discordgo.ApplicationCommandOptionChoice {
-	keys := []util.ReligionRoleType{
-		util.LatinCatholic,
-		util.EasternCatholic,
-		util.OrthodoxChristian,
-		util.RCIACatechumen,
-		util.Protestant,
-		util.NonCatholic,
-		util.Atheist,
-	}
-	var choice []*discordgo.ApplicationCommandOptionChoice
-	for _, religionRoleType := range keys {
-		choice = append(choice, &discordgo.ApplicationCommandOptionChoice{
-			Name:  string(religionRoleType),
-			Value: util.ReligionRoleMapping[religionRoleType],
-		})
+
+	c := []*discordgo.ApplicationCommandOptionChoice{
+		{
+			Name:  string(config.LatinCatholic),
+			Value: config.LatinCatholic,
+		},
+		{
+			Name:  string(config.EasternCatholic),
+			Value: config.EasternCatholic,
+		}, {
+			Name:  string(config.OrthodoxChristian),
+			Value: config.OrthodoxChristian,
+		}, {
+			Name:  string(config.RCIACatechumen),
+			Value: config.RCIACatechumen,
+		}, {
+			Name:  string(config.Protestant),
+			Value: config.Protestant,
+		}, {
+			Name:  string(config.NonCatholic),
+			Value: config.NonCatholic,
+		}, {
+			Name:  string(config.Atheist),
+			Value: config.Atheist,
+		},
 	}
 
-	return choice
+	return c
 }

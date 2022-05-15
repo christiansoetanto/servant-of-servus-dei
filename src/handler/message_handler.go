@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"github.com/christiansoetanto/servant-of-servus-dei/src/config"
 	"github.com/christiansoetanto/servant-of-servus-dei/src/util"
 	"log"
 	"strings"
@@ -33,7 +34,8 @@ func MessageCreateHandlerQuestionOne(s *discordgo.Session, m *discordgo.MessageC
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
-	if m.ChannelID != util.ResponsesChannelId {
+	guildId := m.GuildID
+	if m.ChannelID != config.Config[guildId].Channel.Responses {
 		return
 	}
 
@@ -43,7 +45,7 @@ func MessageCreateHandlerQuestionOne(s *discordgo.Session, m *discordgo.MessageC
 	if strings.Contains(sanitizedContent, questionOneString) && !strings.Contains(sanitizedContent, INRI) {
 		userId := m.Author.ID
 
-		_, err := s.ChannelMessageSend(util.ResponsesChannelId, fmt.Sprintf("Hey <@%s>! It looks like you missed question 1. Please re-read the <#%s> again, we assure you that the code is in there. Thank you for your understanding.\nPS: if you are sure you got it right, please ignore this message.", userId, util.RulesVettingChannelId))
+		_, err := s.ChannelMessageSend(config.Config[guildId].Channel.Responses, fmt.Sprintf("Hey <@%s>! It looks like you missed question 1. Please re-read the <#%s> again, we assure you that the code is in there. Thank you for your understanding.\nPS: if you are sure you got it right, please ignore this message.", userId, config.Config[guildId].Channel.RulesVetting))
 		if err != nil {
 			log.Println(err)
 			return
