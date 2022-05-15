@@ -42,12 +42,8 @@ func MessageCreateHandlerQuestionOne(s *discordgo.Session, m *discordgo.MessageC
 	sanitizedContent = strings.ReplaceAll(sanitizedContent, "latinrite", "")
 	if strings.Contains(sanitizedContent, questionOneString) && !strings.Contains(sanitizedContent, INRI) {
 		userId := m.Author.ID
-		err := s.GuildMemberRoleAdd(util.GuildID, userId, util.VettingQuestioningRoleId)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		_, err = s.ChannelMessageSend(util.ResponsesChannelId, fmt.Sprintf("Hey <@%s>! It looks like you missed question 1. Please re-read the <#%s> again, we assure you that the code is in there. Thank you for your understanding.\nPS: if you are sure you got it right, please ignore this message.", userId, util.RulesVettingChannelId))
+
+		_, err := s.ChannelMessageSend(util.ResponsesChannelId, fmt.Sprintf("Hey <@%s>! It looks like you missed question 1. Please re-read the <#%s> again, we assure you that the code is in there. Thank you for your understanding.\nPS: if you are sure you got it right, please ignore this message.", userId, util.RulesVettingChannelId))
 		if err != nil {
 			log.Println(err)
 			return
