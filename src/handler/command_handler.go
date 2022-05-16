@@ -12,15 +12,15 @@ import (
 var (
 	Ping               = "ping"
 	SDVerify           = "sdverify"
-	commandHandlers    = map[string]func(dg *discordgo.Session, i *discordgo.InteractionCreate) error{}
+	commandHandlers    = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate) error{}
 	commands           []*discordgo.ApplicationCommand
 	registeredCommands []*discordgo.ApplicationCommand
 )
 
 func InitCommandHandler() {
-	commandHandlers = map[string]func(dg *discordgo.Session, i *discordgo.InteractionCreate) error{
-		Ping: func(dg *discordgo.Session, i *discordgo.InteractionCreate) error {
-			err := dg.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate) error{
+		Ping: func(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Content: "Pong!",
@@ -31,9 +31,9 @@ func InitCommandHandler() {
 			}
 			return nil
 		},
-		SDVerify: func(dg *discordgo.Session, i *discordgo.InteractionCreate) error {
+		SDVerify: func(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 
-			err := dg.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Content: "Processing... please wait...",
@@ -76,27 +76,27 @@ func InitCommandHandler() {
 				roleId := guildConfig.ReligionRoleMappingMap[config.ReligionRoleType(roleType)]
 				acknowledgementMessageArgs = append(acknowledgementMessageArgs, roleId)
 
-				err := dg.GuildMemberRoleAdd(guildId, user.ID, string(roleId))
+				err := s.GuildMemberRoleAdd(guildId, user.ID, string(roleId))
 				if err != nil {
 					fmt.Println(err)
 					return err
 				}
 
-				err = dg.GuildMemberRoleAdd(guildId, user.ID, guildConfig.Role.ApprovedUser)
+				err = s.GuildMemberRoleAdd(guildId, user.ID, guildConfig.Role.ApprovedUser)
 				if err != nil {
 					return err
 				}
-				err = dg.GuildMemberRoleRemove(guildId, user.ID, guildConfig.Role.Vetting)
+				err = s.GuildMemberRoleRemove(guildId, user.ID, guildConfig.Role.Vetting)
 				if err != nil {
 					return err
 				}
-				err = dg.GuildMemberRoleRemove(guildId, user.ID, guildConfig.Role.VettingQuestioning)
+				err = s.GuildMemberRoleRemove(guildId, user.ID, guildConfig.Role.VettingQuestioning)
 				if err != nil {
 					return err
 				}
 
 			} else {
-				_, err := dg.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+				_, err := s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
 					Content: "Please choose user and role.",
 				})
 				if err != nil {
@@ -106,16 +106,16 @@ func InitCommandHandler() {
 
 			mod := i.Member
 			content := fmt.Sprintf(guildConfig.Wording.WelcomeMessageFormat, user.Mention(), mod.Mention())
-			_, err = dg.ChannelMessageSend(guildConfig.Channel.GeneralDiscussion, content)
+			_, err = s.ChannelMessageSend(guildConfig.Channel.GeneralDiscussion, content)
 			if err != nil {
 				return err
 			}
 
-			_, err = dg.ChannelMessageSendEmbed(guildConfig.Channel.GeneralDiscussion, util.EmbedBuilder(guildConfig.Wording.WelcomeTitle, fmt.Sprintf(guildConfig.Wording.WelcomeMessageEmbedFormat, welcomeMessageArgs...), util.RandomWelcomeImage()))
+			_, err = s.ChannelMessageSendEmbed(guildConfig.Channel.GeneralDiscussion, util.EmbedBuilder(guildConfig.Wording.WelcomeTitle, fmt.Sprintf(guildConfig.Wording.WelcomeMessageEmbedFormat, welcomeMessageArgs...), util.RandomWelcomeImage()))
 			if err != nil {
 				return err
 			}
-			_, err = dg.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+			_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
 				Content: fmt.Sprintf(
 					acknowledgementMessageFormat,
 					acknowledgementMessageArgs...,
@@ -157,43 +157,56 @@ func InitCommandHandler() {
 
 }
 
-func InteractionCreateHandler(dg *discordgo.Session, i *discordgo.InteractionCreate) {
+func InteractionCreateHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if h, ok := commandHandlers[i.ApplicationCommandData().Name]; ok {
-		err := h(dg, i)
+		err := h(s, i)
 		if err != nil {
 			log.Println(err)
 		}
 	}
 }
 
-func RegisterCommand(dg *discordgo.Session, guildId string) (*discordgo.Session, error) {
+func RegisterCommand(s *discordgo.Session) (*discordgo.Session, error) {
 	log.Println("Adding commands...")
 	for i, v := range commands {
-		cmd, err := dg.ApplicationCommandCreate(dg.State.User.ID, guildId, v)
+		cmd, err := s.ApplicationCommandCreate(s.State.User.ID, "", v)
 		if err != nil {
 			log.Fatalf("Cannot create '%v' command: %v", v.Name, err)
-			return dg, err
+			return s, err
 		}
 		registeredCommands[i] = cmd
 	}
 
-	return dg, nil
+	return s, nil
 
 }
 
-func RemoveCommand(dg *discordgo.Session, guildId string) error {
+func RemoveCommand(s *discordgo.Session) error {
 	log.Println("Removing commands...")
-	// // We need to fetch the commands, since deleting requires the command ID.
-	// // We are doing this from the returned commands on line 375, because using
-	// // this will delete all the commands, which might not be desirable, so we
-	// // are deleting only the commands that we added.
-	// registeredCommands, err := s.ApplicationCommands(s.State.User.ID, *GuildID)
-	// if err != nil {
-	// 	log.Fatalf("Could not fetch registered commands: %v", err)
-	// }
 
-	for _, v := range registeredCommands {
-		err := dg.ApplicationCommandDelete(dg.State.User.ID, guildId, v.ID)
+	registeredCommandsToDelete, err := s.ApplicationCommands(s.State.User.ID, "")
+	registeredCommandsToDelete1, err := s.ApplicationCommands(s.State.User.ID, config.ServusDeiConfigGuildID)
+	registeredCommandsToDelete2, err := s.ApplicationCommands(s.State.User.ID, config.LocalServerConfigGuildID)
+
+	if err != nil {
+		return err
+	}
+	for _, v := range registeredCommandsToDelete {
+		err := s.ApplicationCommandDelete(s.State.User.ID, "", v.ID)
+		if err != nil {
+			log.Fatalf("Cannot delete '%v' command: %v", v.Name, err)
+			return err
+		}
+	}
+	for _, v := range registeredCommandsToDelete1 {
+		err := s.ApplicationCommandDelete(s.State.User.ID, config.ServusDeiConfigGuildID, v.ID)
+		if err != nil {
+			log.Fatalf("Cannot delete '%v' command: %v", v.Name, err)
+			return err
+		}
+	}
+	for _, v := range registeredCommandsToDelete2 {
+		err := s.ApplicationCommandDelete(s.State.User.ID, config.LocalServerConfigGuildID, v.ID)
 		if err != nil {
 			log.Fatalf("Cannot delete '%v' command: %v", v.Name, err)
 			return err
