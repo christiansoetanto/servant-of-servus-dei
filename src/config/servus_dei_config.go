@@ -33,9 +33,9 @@ const (
 )
 
 const (
-	ServusDeiConfigAcknowledgementMessageFormat = "Verification of user <@%s> with role <@&%s> is successful.\\nThank you for using my service. Beep. Boop.\\n"
+	ServusDeiConfigAcknowledgementMessageFormat = "Verification of user <@%s> with role <@&%s> is successful.\nThank you for using my service. Beep. Boop.\n"
 	ServusDeiConfigWelcomeMessageEmbedFormat    = "Welcome to Servus Dei, <@%s>! We are happy to have you! Make sure you check out <#%s> to gain access to the various channels we offer and please do visit <#%s> so you can understand our server better and take use of everything we have to offer. God Bless!"
-	ServusDeiConfigMissedQuestionOneFormat      = "Hey <@%s>! It looks like you missed question 1. Please re-read the <#%s> again, we assure you that the code is in there. Thank you for your understanding.\\nPS: if you are sure you got it right, please ignore this message."
+	ServusDeiConfigMissedQuestionOneFormat      = "Hey <@%s>! It looks like you missed question 1. Please re-read the <#%s> again, we assure you that the code is in there. Thank you for your understanding.\nPS: if you are sure you got it right, please ignore this message."
 	ServusDeiConfigWelcomeTitle                 = "Welcome to Servus Dei!"
 	ServusDeiConfigWelcomeMessageFormat         = "Hey %s! %s just approved your vetting response. Welcome to the server. Feel free to tag us had you have further questions. Enjoy!"
 )
