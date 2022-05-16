@@ -9,9 +9,13 @@ import (
 	"log"
 )
 
+const (
+	Ping          = "ping"
+	SDVerify      = "sdverify"
+	SDQuestionOne = "sdquestionone"
+)
+
 var (
-	Ping               = "ping"
-	SDVerify           = "sdverify"
 	commandHandlers    = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate) error{}
 	commands           []*discordgo.ApplicationCommand
 	registeredCommands []*discordgo.ApplicationCommand
@@ -103,6 +107,7 @@ func InitCommandHandler() {
 				if err != nil {
 					return err
 				}
+				return nil
 			}
 
 			mod := i.Member
@@ -127,7 +132,69 @@ func InitCommandHandler() {
 				return err
 			}
 
-			log.Printf("[%s][%s][%s]", mod.User.Username, user.Username, roleType)
+			log.Printf("[%s] : [%s] | [%s] | [%s]", SDVerify, mod.User.Username, user.Username, roleType)
+			return nil
+		},
+		SDQuestionOne: func(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+
+			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Processing... please wait...",
+				},
+			})
+			if err != nil {
+				return err
+			}
+			// Access options in the order provided by the user.
+			options := i.ApplicationCommandData().Options
+			guildId := i.GuildID
+			guildConfig, ok := config.Config[guildId]
+			if !ok {
+				return errors.New("config not found")
+			}
+
+			// Or convert the slice into a map
+			optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
+			for _, opt := range options {
+				optionMap[opt.Name] = opt
+			}
+
+			missedQuestionOneMessageFormatArgs := make([]interface{}, 0)
+			missedQuestionOneMessageFormat := guildConfig.Wording.MissedQuestionOneFormat
+
+			var user *discordgo.User
+
+			userOpt, userOptOk := optionMap["user-option"]
+			if userOptOk {
+				user = userOpt.UserValue(s)
+				missedQuestionOneMessageFormatArgs = append(missedQuestionOneMessageFormatArgs, user.ID)
+				missedQuestionOneMessageFormatArgs = append(missedQuestionOneMessageFormatArgs, guildConfig.Channel.RulesVetting)
+
+			} else {
+				_, err := s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+					Content: "Please choose user.",
+				})
+				if err != nil {
+					return err
+				}
+				return nil
+			}
+
+			mod := i.Member
+
+			_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+				Content: fmt.Sprintf(
+					missedQuestionOneMessageFormat,
+					missedQuestionOneMessageFormatArgs...,
+				),
+			})
+
+			if err != nil {
+				return err
+			}
+
+			log.Printf("[%s] : [%s] | [%s]", SDQuestionOne, mod.User.Username, user.Username)
 			return nil
 		},
 	}
@@ -152,6 +219,18 @@ func InitCommandHandler() {
 					Description: "Religion role to give",
 					Required:    true,
 					Choices:     buildReligionRoleOptionChoices(),
+				},
+			},
+		},
+		{
+			Name:        SDQuestionOne,
+			Description: "Command for alerting peeps that they missed question one code",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "user-option",
+					Description: "User to alert",
+					Required:    true,
 				},
 			},
 		},
