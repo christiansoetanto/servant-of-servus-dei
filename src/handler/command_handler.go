@@ -1,17 +1,12 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/christiansoetanto/servant-of-servus-dei/src/config"
 	"github.com/christiansoetanto/servant-of-servus-dei/src/util"
 	"log"
-)
-
-const (
-	acknowledgementMessageFormatWithRole    = "Verification of user <@%s> with role <@&%s> is successful.\nThank you for using my service. Beep. Boop.\n"
-	acknowledgementMessageFormatWithoutRole = "Verification of user <@%s> is successful.\nThank you for using my service. Beep. Boop.\n"
-	welcomeMessageFormat                    = "Welcome to Servus Dei, <@%s>! We are happy to have you! Make sure you check out <#%s> to gain access to the various channels we offer and please do visit <#%s> so you can understand our server better and take use of everything we have to offer. God Bless!"
 )
 
 var (
@@ -39,7 +34,6 @@ func InitCommandHandler() {
 		SDVerify: func(dg *discordgo.Session, i *discordgo.InteractionCreate) error {
 
 			err := dg.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				// Ignore type for now, they will be discussed in "responses"
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Content: "Processing... please wait...",
@@ -51,6 +45,10 @@ func InitCommandHandler() {
 			// Access options in the order provided by the user.
 			options := i.ApplicationCommandData().Options
 			guildId := i.GuildID
+			guildConfig, ok := config.Config[guildId]
+			if !ok {
+				return errors.New("config not found")
+			}
 
 			// Or convert the slice into a map
 			optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
@@ -59,65 +57,64 @@ func InitCommandHandler() {
 			}
 
 			acknowledgementMessageArgs := make([]interface{}, 0, len(options))
-			acknowledgementMessageFormat := acknowledgementMessageFormatWithoutRole
+			acknowledgementMessageFormat := guildConfig.Wording.AcknowledgementMessageFormat
 			welcomeMessageArgs := make([]interface{}, 0, 1)
 
 			var user *discordgo.User
 
-			userOpt, ok := optionMap["user-option"]
-			if ok {
+			userOpt, userOptOk := optionMap["user-option"]
+			roleOpt, roleOptOk := optionMap["role-option"]
+			if userOptOk && roleOptOk {
 				acknowledgementMessageArgs = append(acknowledgementMessageArgs, userOpt.UserValue(nil).ID)
 				user = userOpt.UserValue(nil)
 				welcomeMessageArgs = append(welcomeMessageArgs, user.ID)
-				welcomeMessageArgs = append(welcomeMessageArgs, config.Config[guildId].Channel.ReactionRoles)
-				welcomeMessageArgs = append(welcomeMessageArgs, config.Config[guildId].Channel.ServerInformation)
+				welcomeMessageArgs = append(welcomeMessageArgs, guildConfig.Channel.ReactionRoles)
+				welcomeMessageArgs = append(welcomeMessageArgs, guildConfig.Channel.ServerInformation)
 
 				//actually i dont need to put this in here, because user is required anyway. but just to be safe haha
-				roleOpt, ok := optionMap["role-option"]
-				if ok {
-					acknowledgementMessageFormat = acknowledgementMessageFormatWithRole
-					roleType := roleOpt.StringValue()
-					roleId := config.Config[guildId].ReligionRoleMapping[config.ReligionRoleType(roleType)]
-					acknowledgementMessageArgs = append(acknowledgementMessageArgs, roleId)
-					err := dg.GuildMemberRoleAdd(guildId, user.ID, string(roleId))
-					if err != nil {
-						fmt.Println(err)
-						return err
-					}
+				roleType := roleOpt.StringValue()
+				roleId := guildConfig.ReligionRoleMappingMap[config.ReligionRoleType(roleType)]
+				acknowledgementMessageArgs = append(acknowledgementMessageArgs, roleId)
+
+				err := dg.GuildMemberRoleAdd(guildId, user.ID, string(roleId))
+				if err != nil {
+					fmt.Println(err)
+					return err
 				}
 
-				err := dg.GuildMemberRoleAdd(guildId, user.ID, config.Config[guildId].Role.ApprovedUser)
+				err = dg.GuildMemberRoleAdd(guildId, user.ID, guildConfig.Role.ApprovedUser)
 				if err != nil {
 					return err
 				}
-				err = dg.GuildMemberRoleRemove(guildId, user.ID, config.Config[guildId].Role.Vetting)
+				err = dg.GuildMemberRoleRemove(guildId, user.ID, guildConfig.Role.Vetting)
 				if err != nil {
 					return err
 				}
-				err = dg.GuildMemberRoleRemove(guildId, user.ID, config.Config[guildId].Role.VettingQuestioning)
+				err = dg.GuildMemberRoleRemove(guildId, user.ID, guildConfig.Role.VettingQuestioning)
 				if err != nil {
 					return err
 				}
 
 			} else {
 				_, err := dg.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
-					Content: "Please choose user.",
+					Content: "Please choose user and role.",
 				})
 				if err != nil {
 					return err
 				}
 			}
 
-			_, err = dg.ChannelMessageSend(config.Config[guildId].Channel.GeneralDiscussion, user.Mention())
+			mod := i.Member
+			content := fmt.Sprintf(guildConfig.Wording.WelcomeMessageFormat, user.Mention(), mod.Mention())
+			_, err = dg.ChannelMessageSend(guildConfig.Channel.GeneralDiscussion, content)
 			if err != nil {
 				return err
 			}
 
-			_, err = dg.ChannelMessageSendEmbed(config.Config[guildId].Channel.GeneralDiscussion, util.EmbedBuilder(util.WelcomeTitle, fmt.Sprintf(welcomeMessageFormat, welcomeMessageArgs...), util.RandomWelcomeImage()))
+			_, err = dg.ChannelMessageSendEmbed(guildConfig.Channel.GeneralDiscussion, util.EmbedBuilder(guildConfig.Wording.WelcomeTitle, fmt.Sprintf(guildConfig.Wording.WelcomeMessageEmbedFormat, welcomeMessageArgs...), util.RandomWelcomeImage()))
 			if err != nil {
 				return err
 			}
-			//send interaction response later, based on whether the welcome is success or not
 			_, err = dg.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
 				Content: fmt.Sprintf(
 					acknowledgementMessageFormat,
@@ -215,19 +212,24 @@ func buildReligionRoleOptionChoices() []*discordgo.ApplicationCommandOptionChoic
 		{
 			Name:  string(config.EasternCatholic),
 			Value: config.EasternCatholic,
-		}, {
+		},
+		{
 			Name:  string(config.OrthodoxChristian),
 			Value: config.OrthodoxChristian,
-		}, {
+		},
+		{
 			Name:  string(config.RCIACatechumen),
 			Value: config.RCIACatechumen,
-		}, {
+		},
+		{
 			Name:  string(config.Protestant),
 			Value: config.Protestant,
-		}, {
+		},
+		{
 			Name:  string(config.NonCatholic),
 			Value: config.NonCatholic,
-		}, {
+		},
+		{
 			Name:  string(config.Atheist),
 			Value: config.Atheist,
 		},

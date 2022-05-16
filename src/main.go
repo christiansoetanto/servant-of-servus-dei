@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"github.com/christiansoetanto/servant-of-servus-dei/src/config"
 	"github.com/christiansoetanto/servant-of-servus-dei/src/handler"
 	"log"
 	"os"
@@ -66,20 +67,18 @@ func main() {
 	defer dg.Close()
 
 	// !!!Register it globally for now.
-	/*
-		*
-		for guildId, _ := range config.Config {
-			dg, err = handler.RegisterCommand(dg, guildId)
-			if err != nil {
-				return
-			}
+	for guildId, _ := range config.Config {
+		dg, err = handler.RegisterCommand(dg, guildId)
+		if err != nil {
+			return
 		}
-	*/
-	dg, err = handler.RegisterCommand(dg, "")
-	if err != nil {
-		return
 	}
 
+	/*	dg, err = handler.RegisterCommand(dg, "")
+		if err != nil {
+			return
+		}
+	*/
 	// Wait here until CTRL-C or other term signal is received.
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
@@ -88,18 +87,16 @@ func main() {
 
 	if *RemoveCommands {
 		// !!!Remove it globally for now.
-		/*
-			for guildId, _ := range config.Config {
-				err = handler.RemoveCommand(dg, config.GuildID)
-				if err != nil {
-					return
-				}
+		for guildId, _ := range config.Config {
+			err = handler.RemoveCommand(dg, guildId)
+			if err != nil {
+				return
 			}
-		*/
-		err = handler.RemoveCommand(dg, "")
-		if err != nil {
-			return
 		}
+		//err = handler.RemoveCommand(dg, "")
+		//if err != nil {
+		//	return
+		//}
 	}
 	log.Println("Gracefully shutting down.")
 

@@ -52,12 +52,30 @@ type Reaction struct {
 	Sin    string
 }
 
+type Wording struct {
+	AcknowledgementMessageFormat string
+	WelcomeMessageEmbedFormat    string
+	WelcomeMessageFormat         string
+	MissedQuestionOneFormat      string
+	WelcomeTitle                 string
+}
+type ReligionRoleMapping struct {
+	LatinCatholic     ReligionRoleId
+	EasternCatholic   ReligionRoleId
+	OrthodoxChristian ReligionRoleId
+	RCIACatechumen    ReligionRoleId
+	Protestant        ReligionRoleId
+	NonCatholic       ReligionRoleId
+	Atheist           ReligionRoleId
+}
 type GuildConfig struct {
-	GuildName           string
-	Channel             Channel
-	Role                Role
-	Reaction            Reaction
-	ReligionRoleMapping map[ReligionRoleType]ReligionRoleId
+	GuildName                 string
+	Channel                   Channel
+	Role                      Role
+	Reaction                  Reaction
+	ReligionRoleMappingStruct ReligionRoleMapping
+	ReligionRoleMappingMap    map[ReligionRoleType]ReligionRoleId
+	Wording                   Wording
 }
 
 var Config = map[string]GuildConfig{
@@ -92,7 +110,7 @@ var Config = map[string]GuildConfig{
 			Upvote: ServusDeiConfigUpvoteReactionID,
 			Sin:    ServusDeiConfigSinReactionID,
 		},
-		ReligionRoleMapping: map[ReligionRoleType]ReligionRoleId{
+		ReligionRoleMappingStruct: ReligionRoleMapping{
 			LatinCatholic:     ServusDeiConfigLatinCatholicReligionRoleId,
 			EasternCatholic:   ServusDeiConfigEasternCatholicReligionRoleId,
 			OrthodoxChristian: ServusDeiConfigOrthodoxChristianReligionRoleId,
@@ -100,6 +118,22 @@ var Config = map[string]GuildConfig{
 			Protestant:        ServusDeiConfigProtestantReligionRoleId,
 			NonCatholic:       ServusDeiConfigNonCatholicReligionRoleId,
 			Atheist:           ServusDeiConfigAtheistReligionRoleId,
+		},
+		ReligionRoleMappingMap: map[ReligionRoleType]ReligionRoleId{
+			LatinCatholic:     ServusDeiConfigLatinCatholicReligionRoleId,
+			EasternCatholic:   ServusDeiConfigEasternCatholicReligionRoleId,
+			OrthodoxChristian: ServusDeiConfigOrthodoxChristianReligionRoleId,
+			RCIACatechumen:    ServusDeiConfigRCIACatechumenReligionRoleId,
+			Protestant:        ServusDeiConfigProtestantReligionRoleId,
+			NonCatholic:       ServusDeiConfigNonCatholicReligionRoleId,
+			Atheist:           ServusDeiConfigAtheistReligionRoleId,
+		},
+		Wording: Wording{
+			AcknowledgementMessageFormat: ServusDeiConfigAcknowledgementMessageFormat,
+			WelcomeMessageEmbedFormat:    ServusDeiConfigWelcomeMessageEmbedFormat,
+			MissedQuestionOneFormat:      ServusDeiConfigMissedQuestionOneFormat,
+			WelcomeTitle:                 ServusDeiConfigWelcomeTitle,
+			WelcomeMessageFormat:         ServusDeiConfigWelcomeMessageFormat,
 		},
 	},
 	LocalServerConfigGuildID: {
@@ -133,7 +167,7 @@ var Config = map[string]GuildConfig{
 			Upvote: LocalServerConfigUpvoteReactionID,
 			Sin:    LocalServerConfigSinReactionID,
 		},
-		ReligionRoleMapping: map[ReligionRoleType]ReligionRoleId{
+		ReligionRoleMappingStruct: ReligionRoleMapping{
 			LatinCatholic:     LocalServerConfigLatinCatholicReligionRoleId,
 			EasternCatholic:   LocalServerConfigEasternCatholicReligionRoleId,
 			OrthodoxChristian: LocalServerConfigOrthodoxChristianReligionRoleId,
@@ -141,6 +175,22 @@ var Config = map[string]GuildConfig{
 			Protestant:        LocalServerConfigProtestantReligionRoleId,
 			NonCatholic:       LocalServerConfigNonCatholicReligionRoleId,
 			Atheist:           LocalServerConfigAtheistReligionRoleId,
+		},
+		ReligionRoleMappingMap: map[ReligionRoleType]ReligionRoleId{
+			LatinCatholic:     LocalServerConfigLatinCatholicReligionRoleId,
+			EasternCatholic:   LocalServerConfigEasternCatholicReligionRoleId,
+			OrthodoxChristian: LocalServerConfigOrthodoxChristianReligionRoleId,
+			RCIACatechumen:    LocalServerConfigRCIACatechumenReligionRoleId,
+			Protestant:        LocalServerConfigProtestantReligionRoleId,
+			NonCatholic:       LocalServerConfigNonCatholicReligionRoleId,
+			Atheist:           LocalServerConfigAtheistReligionRoleId,
+		},
+		Wording: Wording{
+			AcknowledgementMessageFormat: LocalServerConfigAcknowledgementMessageFormat,
+			WelcomeMessageEmbedFormat:    LocalServerConfigWelcomeMessageEmbedFormat,
+			MissedQuestionOneFormat:      LocalServerConfigMissedQuestionOneFormat,
+			WelcomeTitle:                 LocalServerConfigWelcomeTitle,
+			WelcomeMessageFormat:         LocalServerConfigWelcomeMessageFormat,
 		},
 	},
 }

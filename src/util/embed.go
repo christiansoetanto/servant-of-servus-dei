@@ -11,7 +11,7 @@ const (
 	Author           = "Servant of Servus Dei"
 	WelcomeImageURL  = "https://media.discordapp.net/attachments/751174184733900801/974282451096576041/unknown.png"
 	WelcomeImage2URL = "https://media.discordapp.net/attachments/751174152588623912/975368929008558130/Screenshot_2022-05-11_at_11.42.51_PM.png"
-	FooterText       = "© 2022 soetanto@ServusDei"
+	FooterText       = "2022 | Made for Servus Dei by soetanto™"
 )
 
 func RandomWelcomeImage() string {
