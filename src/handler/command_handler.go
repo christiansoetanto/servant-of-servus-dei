@@ -64,6 +64,7 @@ func InitCommandHandler() {
 
 			userOpt, userOptOk := optionMap["user-option"]
 			roleOpt, roleOptOk := optionMap["role-option"]
+			var roleType string
 			if userOptOk && roleOptOk {
 				acknowledgementMessageArgs = append(acknowledgementMessageArgs, userOpt.UserValue(nil).ID)
 				user = userOpt.UserValue(nil)
@@ -72,7 +73,7 @@ func InitCommandHandler() {
 				welcomeMessageArgs = append(welcomeMessageArgs, guildConfig.Channel.ServerInformation)
 
 				//actually i dont need to put this in here, because user is required anyway. but just to be safe haha
-				roleType := roleOpt.StringValue()
+				roleType = roleOpt.StringValue()
 				roleId := guildConfig.ReligionRoleMappingMap[config.ReligionRoleType(roleType)]
 				acknowledgementMessageArgs = append(acknowledgementMessageArgs, roleId)
 
@@ -125,6 +126,8 @@ func InitCommandHandler() {
 			if err != nil {
 				return err
 			}
+
+			log.Printf("[%s][%s][%s]", mod.User.Username, user.Username, roleType)
 			return nil
 		},
 	}
