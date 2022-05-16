@@ -13,6 +13,7 @@ const (
 	Ping          = "ping"
 	SDVerify      = "sdverify"
 	SDQuestionOne = "sdquestionone"
+	NiceTryBro    = "Nice try, bro! You are not allowed to use this command."
 )
 
 var (
@@ -24,6 +25,13 @@ var (
 func InitCommandHandler() {
 	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate) error{
 		Ping: func(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+			if !isMod(i.Member.User.ID) {
+				err := alertNonMod(s, i)
+				if err != nil {
+					return err
+				}
+				return nil
+			}
 			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
@@ -36,7 +44,14 @@ func InitCommandHandler() {
 			return nil
 		},
 		SDVerify: func(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+			if !isMod(i.Member.User.ID) {
+				err := alertNonMod(s, i)
+				if err != nil {
+					return err
+				}
+				return nil
 
+			}
 			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
@@ -70,8 +85,8 @@ func InitCommandHandler() {
 			roleOpt, roleOptOk := optionMap["role-option"]
 			var roleType string
 			if userOptOk && roleOptOk {
-				acknowledgementMessageArgs = append(acknowledgementMessageArgs, userOpt.UserValue(nil).ID)
 				user = userOpt.UserValue(s)
+				acknowledgementMessageArgs = append(acknowledgementMessageArgs, user.ID)
 				welcomeMessageArgs = append(welcomeMessageArgs, user.ID)
 				welcomeMessageArgs = append(welcomeMessageArgs, guildConfig.Channel.ReactionRoles)
 				welcomeMessageArgs = append(welcomeMessageArgs, guildConfig.Channel.ServerInformation)
@@ -136,6 +151,14 @@ func InitCommandHandler() {
 			return nil
 		},
 		SDQuestionOne: func(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+
+			if !isMod(i.Member.User.ID) {
+				err := alertNonMod(s, i)
+				if err != nil {
+					return err
+				}
+				return nil
+			}
 
 			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -332,4 +355,22 @@ func buildReligionRoleOptionChoices() []*discordgo.ApplicationCommandOptionChoic
 	}
 
 	return c
+}
+
+func isMod(userId string) bool {
+	_, ok := config.Moderator[config.ModeratorUserId(userId)]
+	return ok
+}
+
+func alertNonMod(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: NiceTryBro,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
