@@ -33,7 +33,7 @@ const (
 )
 
 const (
-	LocalServerConfigAcknowledgementMessageFormat = "Verification of user <@%s> with role <@&%s> is successful.\\nThank you for using my service. Beep. Boop.\\n"
+	LocalServerConfigAcknowledgementMessageFormat = "Verification of user <@%s> with role <@&%s> is successful.\nThank you for using my service. Beep. Boop.\n"
 	LocalServerConfigWelcomeMessageEmbedFormat    = "Welcome to Servus Dei, <@%s>! We are happy to have you! Make sure you check out <#%s> to gain access to the various channels we offer and please do visit <#%s> so you can understand our server better and take use of everything we have to offer. God Bless!"
 	LocalServerConfigMissedQuestionOneFormat      = "Hey <@%s>! It looks like you missed question 1. Please re-read the <#%s> again, we assure you that the code is in there. Thank you for your understanding.\\nPS: if you are sure you got it right, please ignore this message."
 	LocalServerConfigWelcomeTitle                 = "Welcome to Servus Dei!"
