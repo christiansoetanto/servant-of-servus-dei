@@ -67,7 +67,7 @@ func InitCommandHandler() {
 			var roleType string
 			if userOptOk && roleOptOk {
 				acknowledgementMessageArgs = append(acknowledgementMessageArgs, userOpt.UserValue(nil).ID)
-				user = userOpt.UserValue(nil)
+				user = userOpt.UserValue(s)
 				welcomeMessageArgs = append(welcomeMessageArgs, user.ID)
 				welcomeMessageArgs = append(welcomeMessageArgs, guildConfig.Channel.ReactionRoles)
 				welcomeMessageArgs = append(welcomeMessageArgs, guildConfig.Channel.ServerInformation)
@@ -156,8 +156,6 @@ func InitCommandHandler() {
 			},
 		},
 	}
-	registeredCommands = make([]*discordgo.ApplicationCommand, len(commands))
-
 }
 
 func InteractionCreateHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -171,13 +169,16 @@ func InteractionCreateHandler(s *discordgo.Session, i *discordgo.InteractionCrea
 
 func RegisterCommand(s *discordgo.Session) (*discordgo.Session, error) {
 	log.Println("Adding commands...")
-	for i, v := range commands {
-		cmd, err := s.ApplicationCommandCreate(s.State.User.ID, "", v)
-		if err != nil {
-			log.Fatalf("Cannot create '%v' command: %v", v.Name, err)
-			return s, err
+	for _, v := range commands {
+		for guildId, _ := range config.Config {
+			cmd, err := s.ApplicationCommandCreate(s.State.User.ID, guildId, v)
+			if err != nil {
+				log.Fatalf("Cannot create '%v' command: %v", v.Name, err)
+				return s, err
+			}
+			registeredCommands = append(registeredCommands, cmd)
 		}
-		registeredCommands[i] = cmd
+
 	}
 
 	return s, nil

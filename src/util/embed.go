@@ -31,8 +31,6 @@ func EmbedBuilder(title, description, welcomeImageUrl string) *discordgo.Message
 		Image: &discordgo.MessageEmbedImage{
 			URL: welcomeImageUrl,
 		},
-
-		Fields: nil,
 	}
 	return embed
 }
