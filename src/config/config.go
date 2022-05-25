@@ -66,6 +66,7 @@ type Wording struct {
 	WelcomeMessageEmbedFormat    string
 	WelcomeMessageFormat         string
 	MissedQuestionOneFormat      string
+	MissedQuestionOneFormatNoPS  string
 	WelcomeTitle                 string
 }
 type ReligionRoleMapping struct {
@@ -141,6 +142,7 @@ var Config = map[string]GuildConfig{
 			AcknowledgementMessageFormat: ServusDeiConfigAcknowledgementMessageFormat,
 			WelcomeMessageEmbedFormat:    ServusDeiConfigWelcomeMessageEmbedFormat,
 			MissedQuestionOneFormat:      ServusDeiConfigMissedQuestionOneFormat,
+			MissedQuestionOneFormatNoPS:  ServusDeiConfigMissedQuestionOneFormatNoPS,
 			WelcomeTitle:                 ServusDeiConfigWelcomeTitle,
 			WelcomeMessageFormat:         ServusDeiConfigWelcomeMessageFormat,
 		},

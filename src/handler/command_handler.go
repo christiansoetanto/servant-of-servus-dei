@@ -184,7 +184,7 @@ func InitCommandHandler() {
 			}
 
 			missedQuestionOneMessageFormatArgs := make([]interface{}, 0)
-			missedQuestionOneMessageFormat := guildConfig.Wording.MissedQuestionOneFormat
+			missedQuestionOneMessageFormat := guildConfig.Wording.MissedQuestionOneFormatNoPS
 
 			var user *discordgo.User
 
@@ -193,7 +193,11 @@ func InitCommandHandler() {
 				user = userOpt.UserValue(s)
 				missedQuestionOneMessageFormatArgs = append(missedQuestionOneMessageFormatArgs, user.ID)
 				missedQuestionOneMessageFormatArgs = append(missedQuestionOneMessageFormatArgs, guildConfig.Channel.RulesVetting)
-
+				err := s.GuildMemberRoleAdd(guildId, user.ID, guildConfig.Role.VettingQuestioning)
+				if err != nil {
+					fmt.Println(err)
+					return err
+				}
 			} else {
 				_, err := s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
 					Content: "Please choose user.",
