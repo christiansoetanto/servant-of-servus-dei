@@ -51,6 +51,7 @@ func main() {
 	s.AddHandler(handler.MessageCreateHandler)
 	s.AddHandler(handler.MessageCreateHandlerQuestionOne)
 	s.AddHandler(handler.InteractionCreateHandler)
+	s.AddHandler(handler.MessageReactionAddHandler)
 	//TODO finish this later
 	//s.AddHandler(handler.MessageReactionAddHandler)
 

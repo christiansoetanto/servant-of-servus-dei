@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/christiansoetanto/servant-of-servus-dei/src/config"
+	"github.com/christiansoetanto/servant-of-servus-dei/src/util"
+	"log"
+	"regexp"
+	"strings"
 )
 
 //TODO list, later:
@@ -27,73 +31,183 @@ func MessageReactionAddHandler(s *discordgo.Session, m *discordgo.MessageReactio
 	if _, ok := config.Moderator[config.ModeratorUserId(m.UserID)]; !ok {
 		return
 	}
-
 	channelId := m.ChannelID
 	if channelId != config.Config[guildId].Channel.ReligiousQuestions {
 		return
 	}
-	//what i have done: do all validation, already able to catch the add upvote reaction handler in RQ
-	//todo next:
-	//1. get apakah dia di rd1 atau rd2, simpan map user yang menjawab.
-	//2. crawl rd1 and/or rd2, di setiap message check message.user (yang kirim messgagenya),
-	//apakah ada di map user yang menjawab tsb.
-	//kalau ada baru cek contentnya apakah sama (jangan lupa sanitize, cek code lama),
-	//if all match, get the message link. simpan balik ke map tadi aja,
-	//jadi map tadi isinya map[userid]interface_answer yang isinya adalah link jawaban, user, dan channel.
-	//tp channel ini lebih enak kalo map aslinya dipisah per channel sih.
-	//3. setelah selesai crawl, send embed ke answered question
-
 	messageId := m.MessageID
-
-	rd1Users, err := s.MessageReactions(m.ChannelID, messageId, config.ReligiousDiscussions1WhiteCheckMarkEmojiName, 0, "", "")
-	//rd2Users, err := s.MessageReactions(m.ChannelID, messageId, util.ReligiousDiscussions2BallotBoxWithCheckEmojiName, 0, "", "")
-
 	message, err := s.ChannelMessage(config.Config[guildId].Channel.ReligiousQuestions, messageId)
 	if err != nil {
+		log.Println(err)
 		return
 	}
-	content, questionAsker, reactions := message.Content, message.Member, message.Reactions
+	question, questionAsker := message.Content, message.Author.ID
 
-	rd1 := make(aaa)
-	rd2 := make(aaa)
-
-	if len(rd1Users) > 0 {
-
-		//di sini bikin algs utk crawl channelnya. cek logic di code lama.
-		messages, err := s.ChannelMessages(config.Config[guildId].Channel.ReligiousDiscussions1, 100, "", "", "")
-		_, _ = messages, err
+	zzz, err := getMessageReactions(s, guildId, m.ChannelID, messageId)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	_ = zzz
+	zzz, err = crawlReligiousDiscussionChannel(s, zzz, guildId, question)
+	if err != nil {
+		log.Println(err)
+		return
 	}
 
-	for _, reaction := range reactions {
-		emoji := reaction.Emoji
+	msgUrl, err := sendAnswerEmbed(s, zzz, guildId, question, questionAsker)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
-		if emoji.Name != config.ReligiousDiscussions1WhiteCheckMarkEmojiName && emoji.Name != config.ReligiousDiscussions2BallotBoxWithCheckEmojiName {
+	err = s.ChannelMessageDelete(m.ChannelID, messageId)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	log.Printf("[%s] : [%s] | [%s]", "Answered Question", config.Moderator[config.ModeratorUserId(m.UserID)], msgUrl)
+
+}
+
+func getMessageReactions(s *discordgo.Session, guildId, channelId, messageId string) ([]z, error) {
+	rd1Users, err := s.MessageReactions(channelId, messageId, config.ReligiousDiscussions1WhiteCheckMarkEmojiName, 0, "", "")
+	if err != nil {
+		return nil, err
+	}
+	rd2Users, err := s.MessageReactions(channelId, messageId, config.ReligiousDiscussions2BallotBoxWithCheckEmojiName, 0, "", "")
+	if err != nil {
+		return nil, err
+	}
+
+	//init the answer map. do this because i want to attach the member even if the answer url is not found...
+	rd1Answers := make(map[userId]answerUrl)
+	rd2Answers := make(map[userId]answerUrl)
+	for _, user := range rd1Users {
+		rd1Answers[userId(user.ID)] = ""
+	}
+	for _, user := range rd2Users {
+		rd2Answers[userId(user.ID)] = ""
+	}
+
+	res := []z{
+		{
+			religiousDiscussionChannelId: config.Config[guildId].Channel.ReligiousDiscussions1,
+			religiousDiscussionEmoji:     config.ReligiousDiscussions1WhiteCheckMarkEmojiName,
+			users:                        rd1Users,
+			answer:                       rd1Answers,
+		},
+		{
+			religiousDiscussionChannelId: config.Config[guildId].Channel.ReligiousDiscussions2,
+			religiousDiscussionEmoji:     config.ReligiousDiscussions2BallotBoxWithCheckEmojiName,
+			users:                        rd2Users,
+			answer:                       rd2Answers,
+		},
+	}
+	return res, nil
+}
+
+func crawlReligiousDiscussionChannel(s *discordgo.Session, zzz []z, guildId, question string) ([]z, error) {
+	for _, z2 := range zzz {
+		if len(z2.users) == 0 {
+			continue
+		}
+		lastMessageId := ""
+		totalAnswerToBeFound := len(z2.users)
+		for i := 0; i < MaxMessageAmount/LimitPerRequest && totalAnswerToBeFound > 0; i++ {
+			fmt.Printf("current iter: %d, max iter: %d, answer left: %d\n", i, MaxMessageAmount/LimitPerRequest, totalAnswerToBeFound)
+			messages, err := s.ChannelMessages(z2.religiousDiscussionChannelId, LimitPerRequest, lastMessageId, "", "")
+			if err != nil {
+				return nil, err
+			}
+			lastMessageId = messages[len(messages)-1].ID
+
+			for _, answerToBe := range messages {
+				isUserValid := false
+				for _, user := range z2.users {
+					if answerToBe.Author.ID == user.ID {
+						isUserValid = true
+						break
+					}
+				}
+				if !isUserValid {
+					continue
+				}
+				if !strings.Contains(sanitize(answerToBe.Content), sanitize(question)) {
+					continue
+				}
+				answerLink := fmt.Sprintf("https://discord.com/channels/%s/%s/%s", guildId, z2.religiousDiscussionChannelId, answerToBe.ID)
+				z2.answer[userId(answerToBe.Author.ID)] = answerUrl(answerLink)
+				totalAnswerToBeFound -= 1
+				if totalAnswerToBeFound <= 0 {
+					break
+				}
+			}
+
+		}
+	}
+	return zzz, nil
+}
+
+func sendAnswerEmbed(s *discordgo.Session, zzz []z, guildId, question, asker string) (string, error) {
+	description := fmt.Sprintf("Question by <@%s>:\n %s", asker, question)
+
+	var fields []*discordgo.MessageEmbedField
+	value := ""
+	for _, z2 := range zzz {
+
+		if len(z2.answer) == 0 {
 			continue
 		}
 
-		//add to rd1 map
-		if emoji.Name == config.ReligiousDiscussions1WhiteCheckMarkEmojiName {
-
-			rd1[emoji.User.ID] = answerData{
-				user: emoji.User,
+		value += fmt.Sprintf("\nin <#%s> by:\n", z2.religiousDiscussionChannelId)
+		for id, url := range z2.answer {
+			value += fmt.Sprintf("‣ <@%s>", id)
+			if url != "" {
+				value += fmt.Sprintf(" [jump to answer!](%s)", url)
 			}
-
+			value += "\n"
 		}
-		if emoji.Name == config.ReligiousDiscussions2BallotBoxWithCheckEmojiName {
-			rd2[emoji.User.ID] = answerData{
-				user: emoji.User,
-			}
-		}
-
 	}
-
-	fmt.Println(m, content, questionAsker, reactions, rd1, rd2)
+	fields = append(fields, &discordgo.MessageEmbedField{
+		Name:   "Answer(s): ",
+		Value:  value,
+		Inline: false,
+	})
+	embed := &discordgo.MessageEmbed{
+		URL:         util.ServusDeiWebsiteURL,
+		Type:        discordgo.EmbedTypeRich,
+		Description: description,
+		Color:       util.GoldenYellowColor,
+		Footer: &discordgo.MessageEmbedFooter{
+			Text:    util.FooterText,
+			IconURL: util.LogoURL,
+		},
+		Fields: fields,
+	}
+	sentAnsweredQuestion, err := s.ChannelMessageSendEmbed(config.Config[guildId].Channel.AnsweredQuestions, embed)
+	if err != nil {
+		return "", err
+	}
+	answerLink := fmt.Sprintf("https://discord.com/channels/%s/%s/%s", guildId, config.Config[guildId].Channel.AnsweredQuestions, sentAnsweredQuestion.ID)
+	return answerLink, nil
 }
 
-type aaa map[string]answerData
+const (
+	LimitPerRequest  = 100
+	MaxMessageAmount = 1000
+)
 
-type answerData struct {
-	channelId string
-	answerUrl string
-	user      *discordgo.User
+func sanitize(input string) string {
+	return strings.ToLower(regexp.MustCompile(`/[\W_]+/g`).ReplaceAllString(input, ""))
+}
+
+type userId string
+type answerUrl string
+type z struct {
+	religiousDiscussionChannelId string
+	religiousDiscussionEmoji     string
+	users                        []*discordgo.User
+	answer                       map[userId]answerUrl
 }

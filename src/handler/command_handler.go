@@ -13,7 +13,7 @@ const (
 	Ping          = "ping"
 	SDVerify      = "sdverify"
 	SDQuestionOne = "sdquestionone"
-	NiceTryBro    = "Nice try, bro! You are not allowed to use this command."
+	NiceTryBro    = "Nice try, bro! You are not allowed to use this command... <@255514888041005057>"
 )
 
 var (
