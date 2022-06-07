@@ -16,6 +16,7 @@ const (
 	ServusDeiConfigVettingQuestioningChannelId            = "914987511481249792"
 	ServusDeiConfigRulesVettingChannelId                  = "775654889934159893"
 	ServusDeiConfigLiturgicalCalendarDiscussionsChannelId = "915621423270211594"
+	ServusDeiConfigBotChannelId                           = "751192775504036031"
 
 	ServusDeiConfigVettingRoleID            = "751145124834312342"
 	ServusDeiConfigVettingQuestioningRoleID = "914986915030241301"

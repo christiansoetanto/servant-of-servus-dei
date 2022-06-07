@@ -1,10 +1,11 @@
-package main
+package calendar
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/christiansoetanto/servant-of-servus-dei/src/config"
+	"github.com/christiansoetanto/servant-of-servus-dei/src/util"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -64,6 +65,11 @@ type MessageItem struct {
 	Text string `json:"text"`
 }
 
+const (
+	LiturgicalCalendarCron    = "Liturgical Calendar Cron"
+	LiturgicalCalendarCommand = "Liturgical Calendar Command"
+)
+
 func getText(liturgicalDays []LiturgicalDay) string {
 	var text string
 	for _, day := range liturgicalDays {
@@ -93,32 +99,39 @@ func getText(liturgicalDays []LiturgicalDay) string {
 
 func CalendarCronJob(s *discordgo.Session) func() {
 	return func() {
-		functionsUrl := os.Getenv("ROMCAL_API_FUNCTIONS_URL")
-		response, err := http.Get(functionsUrl)
+		textToSend, msg := GetCalendarText()
+		if msg != "" {
+			util.ReportError(s, msg)
+			return
+		}
+		_, err := s.ChannelMessageSend(config.ServusDeiConfigLiturgicalCalendarDiscussionsChannelId, textToSend)
 		if err != nil {
-			log.Fatal(err)
+			msg := fmt.Sprintf("Error: %s : %s", LiturgicalCalendarCron, err.Error())
+			util.ReportError(s, msg)
 			return
 		}
-		data, _ := ioutil.ReadAll(response.Body)
-
-		var allLiturgicalDays AllLiturgicalDays
-		errUnmarshal := json.Unmarshal(data, &allLiturgicalDays)
-		if errUnmarshal != nil {
-			log.Fatal(errUnmarshal)
-			return
-		}
-
-		currentTime := time.Now()
-		greetingText := fmt.Sprintf(
-			"Hello! Today is %s, %d %s %d UTC time.\nThe Roman Catholic Church is celebrating:", currentTime.Weekday(),
-			currentTime.Day(), currentTime.Month(), currentTime.Year())
-		calendarText := getText(allLiturgicalDays.LiturgicalDaysEn)
-		textToSend := fmt.Sprintf("%s\n%s\n", greetingText, calendarText)
-		_, err = s.ChannelMessageSend(config.ServusDeiConfigLiturgicalCalendarDiscussionsChannelId, textToSend)
-		if err != nil {
-			log.Printf("Error: [Liturgical Calendar] : %s", err.Error())
-			return
-		}
-		log.Printf("[Liturgical Calendar] : %s", textToSend)
+		log.Printf("%s : %s", LiturgicalCalendarCron, textToSend)
 	}
+}
+
+func GetCalendarText() (string, string) {
+	functionsUrl := os.Getenv("ROMCAL_API_FUNCTIONS_URL")
+	response, err := http.Get(functionsUrl)
+	if err != nil {
+		return "", fmt.Sprintf("Error: [Fetching calendar] : %s", err.Error())
+	}
+	data, _ := ioutil.ReadAll(response.Body)
+
+	var allLiturgicalDays AllLiturgicalDays
+	errUnmarshal := json.Unmarshal(data, &allLiturgicalDays)
+	if errUnmarshal != nil {
+		return "", fmt.Sprintf("Error: [Unmarshall Response] : %s", errUnmarshal.Error())
+	}
+
+	currentTime := time.Now()
+	greetingText := fmt.Sprintf(
+		"Hello! Today is %s, %d %s %d UTC time.\nThe Roman Catholic Church is celebrating:", currentTime.Weekday(),
+		currentTime.Day(), currentTime.Month(), currentTime.Year())
+	calendarText := getText(allLiturgicalDays.LiturgicalDaysEn)
+	return fmt.Sprintf("%s\n%s\n", greetingText, calendarText), ""
 }

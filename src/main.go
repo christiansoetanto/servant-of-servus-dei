@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"github.com/christiansoetanto/servant-of-servus-dei/src/calendar"
 	"github.com/christiansoetanto/servant-of-servus-dei/src/handler"
 	"github.com/robfig/cron/v3"
 	"log"
@@ -48,7 +49,7 @@ const EachSecondCron = "@every 5s"
 
 func cronJob(s *discordgo.Session) {
 	c := cron.New()
-	_, err := c.AddFunc(DailyCron, CalendarCronJob(s))
+	_, err := c.AddFunc(DailyCron, calendar.CalendarCronJob(s))
 	if err != nil {
 		return
 	}
@@ -64,7 +65,7 @@ func main() {
 	s.AddHandler(handler.InteractionCreateHandler)
 	s.AddHandler(handler.MessageReactionAddHandler)
 
-	s.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsGuildMessageReactions
+	s.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsGuildMessageReactions | discordgo.IntentsDirectMessages
 	err = s.Open()
 	if err != nil {
 		fmt.Println("error opening connection,", err)

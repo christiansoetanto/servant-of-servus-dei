@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"github.com/christiansoetanto/servant-of-servus-dei/src/calendar"
 	"github.com/christiansoetanto/servant-of-servus-dei/src/config"
 	"github.com/christiansoetanto/servant-of-servus-dei/src/util"
 	"log"
@@ -13,6 +14,7 @@ const (
 	Ping          = "ping"
 	SDVerify      = "sdverify"
 	SDQuestionOne = "sdquestionone"
+	Calendar      = "calendar"
 	NiceTryBro    = "Nice try, bro! You are not allowed to use this command... <@255514888041005057>"
 )
 
@@ -224,6 +226,34 @@ func InitCommandHandler() {
 			log.Printf("[%s] : [%s] | [%s]", SDQuestionOne, mod.User.Username, user.Username)
 			return nil
 		},
+		Calendar: func(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Processing... please wait...",
+				},
+			})
+			if err != nil {
+				return err
+			}
+
+			calendarText, msg := calendar.GetCalendarText()
+			if msg != "" {
+				util.ReportError(s, msg)
+				return errors.New(msg)
+			}
+			_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+				Content: calendarText,
+			})
+
+			if err != nil {
+				util.ReportError(s, err.Error())
+				return err
+			}
+
+			log.Printf("[%s] : [%s] ", Calendar, i.Interaction.Member.User.Username)
+			return nil
+		},
 	}
 	commands = []*discordgo.ApplicationCommand{
 		{
@@ -261,6 +291,10 @@ func InitCommandHandler() {
 				},
 			},
 		},
+		{
+			Name:        Calendar,
+			Description: "Get today's liturgical calendar",
+		},
 	}
 }
 
@@ -268,7 +302,7 @@ func InteractionCreateHandler(s *discordgo.Session, i *discordgo.InteractionCrea
 	if h, ok := commandHandlers[i.ApplicationCommandData().Name]; ok {
 		err := h(s, i)
 		if err != nil {
-			log.Println(err)
+			util.ReportError(s, err.Error())
 		}
 	}
 }
