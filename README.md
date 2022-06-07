@@ -1,2 +1,2 @@
 # servant-of-servus-dei
-discord.gg/Catholic
+[discord.gg/Catholic](https://discord.gg/Catholic)
