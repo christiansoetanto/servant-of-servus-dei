@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/christiansoetanto/servant-of-servus-dei/src/handler"
+	"github.com/robfig/cron/v3"
 	"log"
 	"os"
 	"os/signal"
@@ -22,11 +23,8 @@ func init() {
 }
 
 var (
-	Token         = flag.String("t", os.Getenv("BOTTOKEN"), "Bot Token")
-	isLocalServer = flag.Bool("l", false, "True if local debugging and use local server. Default is false, use Servus Dei config.")
-	// GuildID i really cant find a way to put GuildID to config... i did tho
-	//GuildID = flag.String("g", "751139261515825162", "Guild ID. If not passed - bot registers commands globally")
-	//GuildID = flag.String("g", "751139261515825162", "Guild ID. If not passed - bot registers commands globally")
+	Token          = flag.String("t", os.Getenv("BOTTOKEN"), "Bot Token")
+	isLocalServer  = flag.Bool("l", false, "True if local debugging and use local server. Default is false, use Servus Dei config.")
 	RemoveCommands = flag.Bool("rmcmd", true, "Remove all commands after shutdowning or not")
 )
 
@@ -45,6 +43,19 @@ func initDiscordGoSession() {
 	}
 }
 
+const DailyCron = "@daily"
+const EachSecondCron = "@every 5s"
+
+func cronJob(s *discordgo.Session) {
+	c := cron.New()
+	_, err := c.AddFunc(DailyCron, CalendarCronJob(s))
+	if err != nil {
+		return
+	}
+	c.Start()
+
+}
+
 func main() {
 
 	s.AddHandler(handler.ReadyHandler)
@@ -52,8 +63,6 @@ func main() {
 	s.AddHandler(handler.MessageCreateHandlerQuestionOne)
 	s.AddHandler(handler.InteractionCreateHandler)
 	s.AddHandler(handler.MessageReactionAddHandler)
-	//TODO finish this later
-	//s.AddHandler(handler.MessageReactionAddHandler)
 
 	s.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsGuildMessageReactions
 	err = s.Open()
@@ -67,6 +76,8 @@ func main() {
 	if err != nil {
 		return
 	}
+
+	cronJob(s)
 
 	// Wait here until CTRL-C or other term signal is received.
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
@@ -82,6 +93,7 @@ func main() {
 			return
 		}
 	}
+
 	log.Println("Gracefully shutting down.")
 
 }

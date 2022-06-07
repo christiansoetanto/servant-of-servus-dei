@@ -31,8 +31,8 @@ func MessageReactionAddHandler(s *discordgo.Session, m *discordgo.MessageReactio
 	if _, ok := config.Moderator[config.ModeratorUserId(m.UserID)]; !ok {
 		return
 	}
-	channelId := m.ChannelID
-	if channelId != config.Config[guildId].Channel.ReligiousQuestions {
+	ChannelId := m.ChannelID
+	if ChannelId != config.Config[guildId].Channel.ReligiousQuestions {
 		return
 	}
 	messageId := m.MessageID
@@ -71,12 +71,12 @@ func MessageReactionAddHandler(s *discordgo.Session, m *discordgo.MessageReactio
 
 }
 
-func getMessageReactions(s *discordgo.Session, guildId, channelId, messageId string) ([]z, error) {
-	rd1Users, err := s.MessageReactions(channelId, messageId, config.ReligiousDiscussions1WhiteCheckMarkEmojiName, 0, "", "")
+func getMessageReactions(s *discordgo.Session, guildId, ChannelId, messageId string) ([]z, error) {
+	rd1Users, err := s.MessageReactions(ChannelId, messageId, config.ReligiousDiscussions1WhiteCheckMarkEmojiName, 0, "", "")
 	if err != nil {
 		return nil, err
 	}
-	rd2Users, err := s.MessageReactions(channelId, messageId, config.ReligiousDiscussions2BallotBoxWithCheckEmojiName, 0, "", "")
+	rd2Users, err := s.MessageReactions(ChannelId, messageId, config.ReligiousDiscussions2BallotBoxWithCheckEmojiName, 0, "", "")
 	if err != nil {
 		return nil, err
 	}
