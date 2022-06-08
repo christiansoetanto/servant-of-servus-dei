@@ -9,20 +9,6 @@ import (
 	"strings"
 )
 
-func MessageCreateHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
-
-	if m.Author.ID == s.State.User.ID {
-		return
-	}
-	if m.Content == "ping" {
-		s.ChannelMessageSend(m.ChannelID, "Pong!")
-	}
-
-	if m.Content == "pong" {
-		s.ChannelMessageSend(m.ChannelID, "Ping!")
-	}
-}
-
 var questionOneString = util.Sanitize("and give us the code")
 
 var INRI = util.Sanitize("INRI")

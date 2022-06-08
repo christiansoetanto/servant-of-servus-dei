@@ -60,7 +60,6 @@ func cronJob(s *discordgo.Session) {
 func main() {
 
 	s.AddHandler(handler.ReadyHandler)
-	s.AddHandler(handler.MessageCreateHandler)
 	s.AddHandler(handler.MessageCreateHandlerQuestionOne)
 	s.AddHandler(handler.InteractionCreateHandler)
 	s.AddHandler(handler.MessageReactionAddHandler)
