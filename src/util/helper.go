@@ -19,13 +19,13 @@ func Sanitize(input string) string {
 func ReportError(s *discordgo.Session, msg string) {
 	channel, err := s.UserChannelCreate("255514888041005057")
 	if err != nil {
-		log.Printf(err.Error())
+		log.Print(err.Error())
 		return
 	}
 	_, err = s.ChannelMessageSend(channel.ID, msg)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Print(err.Error())
 		return
 	}
-	log.Printf(msg)
+	log.Print(msg)
 }

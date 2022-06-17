@@ -13,8 +13,6 @@ import (
 	"syscall"
 )
 
-// isLocalServer Jadikan false kalau naik prod
-
 func init() {
 
 	initConfig()
@@ -25,7 +23,6 @@ func init() {
 
 var (
 	Token          = flag.String("t", os.Getenv("BOTTOKEN"), "Bot Token")
-	isLocalServer  = flag.Bool("l", false, "True if local debugging and use local server. Default is false, use Servus Dei config.")
 	RemoveCommands = flag.Bool("rmcmd", true, "Remove all commands after shutdowning or not")
 )
 
@@ -45,7 +42,6 @@ func initDiscordGoSession() {
 }
 
 const DailyCron = "@daily"
-const EachSecondCron = "@every 5s"
 
 func cronJob(s *discordgo.Session) {
 	c := cron.New()
@@ -83,7 +79,7 @@ func main() {
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
 	//syscall.SIGTERM,
-	signal.Notify(sc, syscall.SIGINT, os.Interrupt, os.Kill)
+	signal.Notify(sc, syscall.SIGINT)
 	<-sc
 
 	if *RemoveCommands {

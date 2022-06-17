@@ -10,10 +10,6 @@ import (
 	"strings"
 )
 
-//TODO list, later:
-//1. move rq to rd
-//2. is X a sin
-
 func MessageReactionAddHandler(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
 
 	// Ignore all messages created by the bot itself
@@ -43,19 +39,18 @@ func MessageReactionAddHandler(s *discordgo.Session, m *discordgo.MessageReactio
 	}
 	question, questionAsker := message.Content, message.Author.ID
 
-	zzz, err := getMessageReactions(s, guildId, m.ChannelID, messageId)
+	answeredQuestionDatas, err := getMessageReactions(s, guildId, m.ChannelID, messageId)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	_ = zzz
-	zzz, err = crawlReligiousDiscussionChannel(s, zzz, guildId, question)
+	answeredQuestionDatas, err = crawlReligiousDiscussionChannel(s, answeredQuestionDatas, guildId, question)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	msgUrl, err := sendAnswerEmbed(s, zzz, guildId, question, questionAsker)
+	msgUrl, err := sendAnswerEmbed(s, answeredQuestionDatas, guildId, question, questionAsker)
 	if err != nil {
 		log.Println(err)
 		return
@@ -71,7 +66,7 @@ func MessageReactionAddHandler(s *discordgo.Session, m *discordgo.MessageReactio
 
 }
 
-func getMessageReactions(s *discordgo.Session, guildId, ChannelId, messageId string) ([]z, error) {
+func getMessageReactions(s *discordgo.Session, guildId, ChannelId, messageId string) ([]answeredQuestionData, error) {
 	rd1Users, err := s.MessageReactions(ChannelId, messageId, config.ReligiousDiscussions1WhiteCheckMarkEmojiName, 0, "", "")
 	if err != nil {
 		return nil, err
@@ -91,16 +86,14 @@ func getMessageReactions(s *discordgo.Session, guildId, ChannelId, messageId str
 		rd2Answers[userId(user.ID)] = ""
 	}
 
-	res := []z{
+	res := []answeredQuestionData{
 		{
 			religiousDiscussionChannelId: config.Config[guildId].Channel.ReligiousDiscussions1,
-			religiousDiscussionEmoji:     config.ReligiousDiscussions1WhiteCheckMarkEmojiName,
 			users:                        rd1Users,
 			answer:                       rd1Answers,
 		},
 		{
 			religiousDiscussionChannelId: config.Config[guildId].Channel.ReligiousDiscussions2,
-			religiousDiscussionEmoji:     config.ReligiousDiscussions2BallotBoxWithCheckEmojiName,
 			users:                        rd2Users,
 			answer:                       rd2Answers,
 		},
@@ -108,8 +101,8 @@ func getMessageReactions(s *discordgo.Session, guildId, ChannelId, messageId str
 	return res, nil
 }
 
-func crawlReligiousDiscussionChannel(s *discordgo.Session, zzz []z, guildId, question string) ([]z, error) {
-	for _, z2 := range zzz {
+func crawlReligiousDiscussionChannel(s *discordgo.Session, answeredQuestionDatas []answeredQuestionData, guildId, question string) ([]answeredQuestionData, error) {
+	for _, z2 := range answeredQuestionDatas {
 		if len(z2.users) == 0 {
 			continue
 		}
@@ -147,15 +140,15 @@ func crawlReligiousDiscussionChannel(s *discordgo.Session, zzz []z, guildId, que
 
 		}
 	}
-	return zzz, nil
+	return answeredQuestionDatas, nil
 }
 
-func sendAnswerEmbed(s *discordgo.Session, zzz []z, guildId, question, asker string) (string, error) {
+func sendAnswerEmbed(s *discordgo.Session, answeredQuestionDatas []answeredQuestionData, guildId, question, asker string) (string, error) {
 	description := fmt.Sprintf("Question by <@%s>:\n %s", asker, question)
 
 	var fields []*discordgo.MessageEmbedField
 	value := ""
-	for _, z2 := range zzz {
+	for _, z2 := range answeredQuestionDatas {
 
 		if len(z2.answer) == 0 {
 			continue
@@ -205,9 +198,8 @@ func sanitize(input string) string {
 
 type userId string
 type answerUrl string
-type z struct {
+type answeredQuestionData struct {
 	religiousDiscussionChannelId string
-	religiousDiscussionEmoji     string
 	users                        []*discordgo.User
 	answer                       map[userId]answerUrl
 }

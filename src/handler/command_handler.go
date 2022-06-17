@@ -310,7 +310,7 @@ func InteractionCreateHandler(s *discordgo.Session, i *discordgo.InteractionCrea
 func RegisterCommand(s *discordgo.Session) (*discordgo.Session, error) {
 	log.Println("Adding commands...")
 	for _, v := range commands {
-		for guildId, _ := range config.Config {
+		for guildId := range config.Config {
 			cmd, err := s.ApplicationCommandCreate(s.State.User.ID, guildId, v)
 			if err != nil {
 				log.Fatalf("Cannot create '%v' command: %v", v.Name, err)
@@ -329,9 +329,14 @@ func RemoveCommand(s *discordgo.Session) error {
 	log.Println("Removing commands...")
 
 	registeredCommandsToDelete, err := s.ApplicationCommands(s.State.User.ID, "")
+	if err != nil {
+		return err
+	}
 	registeredCommandsToDelete1, err := s.ApplicationCommands(s.State.User.ID, config.ServusDeiConfigGuildID)
+	if err != nil {
+		return err
+	}
 	registeredCommandsToDelete2, err := s.ApplicationCommands(s.State.User.ID, config.LocalServerConfigGuildID)
-
 	if err != nil {
 		return err
 	}

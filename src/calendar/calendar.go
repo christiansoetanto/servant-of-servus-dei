@@ -84,11 +84,11 @@ func getText(liturgicalDays []LiturgicalDay) string {
 				text += fmt.Sprintf(" in the %s", seasonNames[0])
 			}
 		} else {
-			text += fmt.Sprintf("%s", name)
+			text += name
 		}
 
 		if isHolyDayOfObligation {
-			text += fmt.Sprintf(". A Holy Day of Obligation")
+			text += ". A Holy Day of Obligation"
 		}
 
 		text += ".\n"
