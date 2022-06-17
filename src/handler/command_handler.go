@@ -318,7 +318,6 @@ func RegisterCommand(s *discordgo.Session) (*discordgo.Session, error) {
 			}
 			registeredCommands = append(registeredCommands, cmd)
 		}
-
 	}
 
 	return s, nil
