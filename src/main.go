@@ -29,8 +29,10 @@ var (
 )
 
 const (
-	FirestoreClientKey = "firestoreclientkey"
+	FirestoreClientKey contextKey = "firestoreclientkey"
 )
+
+type contextKey string
 
 func initConfig() {
 	flag.Parse()
@@ -65,6 +67,7 @@ func main() {
 
 	firestoreClient := createClient(ctx)
 	ctx = context.WithValue(ctx, FirestoreClientKey, firestoreClient)
+	_ = ctx
 	defer firestoreClient.Close()
 
 	s.AddHandler(handler.ReadyHandler)
