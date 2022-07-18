@@ -28,6 +28,8 @@ var Moderator = map[ModeratorUserId]ModeratorUsername{
 	"469970745586483210": "hermano",
 	"761486036987281438": "trex",
 	"302301261103890452": "braydog",
+	"401949214373838848": "buggy",
+	"274724929478459392": "carlos",
 }
 
 type ModeratorUserId string
