@@ -25,7 +25,7 @@ type LiturgicalDay struct {
 	Rank                  string        `json:"rank"`
 	IsHolyDayOfObligation bool          `json:"isHolyDayOfObligation"`
 	IsOptional            bool          `json:"isOptional"`
-	Martyrology           []Martyrology `json:"martyrology"`
+	Martyrology           []interface{} `json:"martyrology"`
 	Titles                []string      `json:"titles"`
 	Calendar              Calendar      `json:"calendar"`
 	Cycles                Cycles        `json:"cycles"`
