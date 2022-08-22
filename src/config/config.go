@@ -18,7 +18,6 @@ type ReligionRoleId string
 var Moderator = map[ModeratorUserId]ModeratorUsername{
 	"255514888041005057": "soetanto",
 	"385901039171272726": "cathmeme",
-	"210062928110419968": "tristan",
 	"505100307051708416": "potato",
 	"339808311153000460": "shadowfax",
 	"328369198696890378": "hick",
@@ -30,6 +29,7 @@ var Moderator = map[ModeratorUserId]ModeratorUsername{
 	"302301261103890452": "braydog",
 	"401949214373838848": "buggy",
 	"274724929478459392": "carlos",
+	"501368090504986627": "athanasius",
 }
 
 type ModeratorUserId string
