@@ -1,8 +1,6 @@
 package main
 
 import (
-	"cloud.google.com/go/firestore"
-	"context"
 	"flag"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
@@ -27,12 +25,6 @@ var (
 	Token          = flag.String("t", os.Getenv("BOTTOKEN"), "Bot Token")
 	RemoveCommands = flag.Bool("rmcmd", true, "Remove all commands after shutdowning or not")
 )
-
-const (
-	FirestoreClientKey contextKey = "firestoreclientkey"
-)
-
-type contextKey string
 
 func initConfig() {
 	flag.Parse()
@@ -62,13 +54,6 @@ func cronJob(s *discordgo.Session) {
 }
 
 func main() {
-
-	ctx := context.Background()
-
-	firestoreClient := createClient(ctx)
-	ctx = context.WithValue(ctx, FirestoreClientKey, firestoreClient)
-	_ = ctx
-	defer firestoreClient.Close()
 
 	s.AddHandler(handler.ReadyHandler)
 	s.AddHandler(handler.MessageCreateHandlerQuestionOne)
@@ -107,17 +92,4 @@ func main() {
 
 	log.Println("Gracefully shutting down.")
 
-}
-
-func createClient(ctx context.Context) *firestore.Client {
-	// Sets your Google Cloud Platform project ID.
-	projectID := "youtube-title-updater-340409"
-
-	client, err := firestore.NewClient(ctx, projectID)
-	if err != nil {
-		log.Fatalf("Failed to create client: %v", err)
-	}
-	// Close client when done with
-	// defer client.Close()
-	return client
 }
