@@ -338,6 +338,18 @@ func RemoveCommand(s *discordgo.Session) error {
 			return err
 		}
 	}
+
+	registeredCommandsToDelete2, err := s.ApplicationCommands(s.State.User.ID, config.LocalServerConfigGuildID)
+	if err != nil {
+		return err
+	}
+	for _, v := range registeredCommandsToDelete2 {
+		err := s.ApplicationCommandDelete(s.State.User.ID, config.LocalServerConfigGuildID, v.ID)
+		if err != nil {
+			log.Fatalf("Cannot delete '%v' command: %v", v.Name, err)
+			return err
+		}
+	}
 	return nil
 }
 

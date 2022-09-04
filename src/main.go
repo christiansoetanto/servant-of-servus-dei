@@ -67,6 +67,12 @@ func main() {
 		return
 	}
 	defer s.Close()
+
+	err = handler.RemoveCommand(s)
+	if err != nil {
+		return
+	}
+	return
 	s, err = handler.RegisterCommand(s)
 	if err != nil {
 		return
@@ -80,14 +86,6 @@ func main() {
 	//syscall.SIGTERM,
 	signal.Notify(sc, syscall.SIGINT)
 	<-sc
-
-	if *RemoveCommands {
-
-		err = handler.RemoveCommand(s)
-		if err != nil {
-			return
-		}
-	}
 
 	log.Println("Gracefully shutting down.")
 
