@@ -327,34 +327,12 @@ func RegisterCommand(s *discordgo.Session) (*discordgo.Session, error) {
 func RemoveCommand(s *discordgo.Session) error {
 	log.Println("Removing commands...")
 
-	registeredCommandsToDelete, err := s.ApplicationCommands(s.State.User.ID, "")
-	if err != nil {
-		return err
-	}
 	registeredCommandsToDelete1, err := s.ApplicationCommands(s.State.User.ID, config.ServusDeiConfigGuildID)
 	if err != nil {
 		return err
 	}
-	registeredCommandsToDelete2, err := s.ApplicationCommands(s.State.User.ID, config.LocalServerConfigGuildID)
-	if err != nil {
-		return err
-	}
-	for _, v := range registeredCommandsToDelete {
-		err := s.ApplicationCommandDelete(s.State.User.ID, "", v.ID)
-		if err != nil {
-			log.Fatalf("Cannot delete '%v' command: %v", v.Name, err)
-			return err
-		}
-	}
 	for _, v := range registeredCommandsToDelete1 {
 		err := s.ApplicationCommandDelete(s.State.User.ID, config.ServusDeiConfigGuildID, v.ID)
-		if err != nil {
-			log.Fatalf("Cannot delete '%v' command: %v", v.Name, err)
-			return err
-		}
-	}
-	for _, v := range registeredCommandsToDelete2 {
-		err := s.ApplicationCommandDelete(s.State.User.ID, config.LocalServerConfigGuildID, v.ID)
 		if err != nil {
 			log.Fatalf("Cannot delete '%v' command: %v", v.Name, err)
 			return err

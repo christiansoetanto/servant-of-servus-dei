@@ -67,7 +67,6 @@ func main() {
 		return
 	}
 	defer s.Close()
-
 	s, err = handler.RegisterCommand(s)
 	if err != nil {
 		return
