@@ -68,11 +68,11 @@ func main() {
 	}
 	defer s.Close()
 
-	err = handler.RemoveCommand(s)
-	if err != nil {
-		return
-	}
-	return
+	//err = handler.RemoveCommand(s)
+	//	if err != nil {
+	//		return
+	//	}
+
 	s, err = handler.RegisterCommand(s)
 	if err != nil {
 		return
